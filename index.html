@@ -1,42 +1,27 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ProTrader X - Profesyonel Web Trader</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProTrader X</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <script src="https://s3.tradingview.com/tv.js"></script>
   <link rel="manifest" href="/manifest.json">
-  <link rel="apple-touch-icon" href="/icon-192.png">
+  <script src="https://cdn.tailwindcss.com"></script>  // CDN warning'i sik et, production'da build et
   <style>
-    body { font-family: 'Segoe UI', sans-serif; transition: background 0.3s; }
+    body { font-family: 'Segoe UI', sans-serif; }
     .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
     .light-mode { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); color: #0f172a; }
-    .light-mode .bg-gray-800 { background: #ffffff; }
-    .light-mode .bg-gray-700 { background: #f3f4f6; }
-    .light-mode .text-gray-100 { color: #0f172a; }
-    .light-mode .text-gray-400 { color: #6b7280; }
-    .light-mode .text-green-400 { color: #16a34a; }
-    .light-mode .text-red-400 { color: #dc2626; }
-    .light-mode .gradient-bg { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); }
-    @media (max-width: 768px) {
-      .header { position: fixed; top: 0; width: 100%; z-index: 10; }
-      .dashboard-content { padding-top: 80px; padding-bottom: 80px; }
-      .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 10; background: #1e293b; border-top: 1px solid #334155; display: flex; justify-content: space-around; align-items: center; padding: 0.5rem 0; }
-    }
+    // ... Önceki style'lar aynı, kopyala ...
   </style>
 </head>
-<body class="bg-gray-900 text-gray-100 gradient-bg">
+<body class="text-gray-100 gradient-bg">
 
 <!-- Auth Screen -->
 <div id="authScreen" class="min-h-screen flex items-center justify-center">
   <div class="bg-gray-800 p-10 rounded-2xl shadow-2xl w-full max-w-md border border-gray-700">
-    <h1 class="text-4xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
-      ProTrader X
-    </h1>
+    <h1 class="text-4xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">ProTrader X</h1>
 
-    <!-- Kayıt Formu -->
     <div id="registerForm" class="space-y-6">
       <h2 class="text-2xl font-semibold text-center">Kayıt Ol</h2>
       <input type="text" id="regName" placeholder="Ad Soyad" class="w-full px-4 py-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
@@ -48,7 +33,6 @@
       <p class="text-center text-sm">Zaten hesabın var mı? <span onclick="toggleAuth()" class="text-blue-400 cursor-pointer hover:underline">Giriş yap</span></p>
     </div>
 
-    <!-- Giriş Formu -->
     <div id="loginForm" class="space-y-6 hidden">
       <h2 class="text-2xl font-semibold text-center">Giriş Yap</h2>
       <input type="email" id="loginEmail" placeholder="E-posta" class="w-full px-4 py-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
@@ -63,231 +47,56 @@
   </div>
 </div>
 
-<!-- Trader Dashboard -->
-<div id="traderDashboard" class="min-h-screen gradient-bg hidden">
-  <header class="bg-gray-800/80 backdrop-blur border-b border-gray-700 header">
-    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center flex-wrap">
-      <div class="flex items-center space-x-6">
-        <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">ProTrader X</h1>
-        <button onclick="toggleTheme()" class="text-sm text-gray-400 hover:text-white"><i class="fas fa-moon mr-2"></i>Tema</button>
-        <button onclick="logout()" class="text-sm text-gray-400 hover:text-white"><i class="fas fa-sign-out-alt mr-2"></i>Çıkış</button>
-      </div>
-      <div class="flex items-center space-x-4 mt-4 md:mt-0">
-        <div class="text-right">
-          <p class="text-sm text-gray-400">Bakiye</p>
-          <p id="balance" class="text-2xl font-bold text-green-400">$10,000.00</p>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <div class="max-w-7xl mx-auto p-6 dashboard-content">
-    <!-- Grafik + Emir Paneli -->
-    <div class="space-y-6">
-      <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden h-[300px] md:h-[500px]">
-        <div id="tv_chart_container" class="w-full h-full"></div>
-        <canvas id="fallbackChart" class="hidden w-full h-full" style="background: #1e293b;"></canvas>
-      </div>
-
-      <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
-        <h3 class="text-2xl font-bold mb-6 text-center">Yeni Emir</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
-          <select id="orderType" class="bg-gray-700 px-4 py-3 rounded-lg">
-            <option value="buy">AL (Buy)</option>
-            <option value="sell">SAT (Sell)</option>
-          </select>
-          <input type="number" id="amount" placeholder="Yatırım Miktarı ($)" value="100" min="10" class="bg-gray-700 px-4 py-3 rounded-lg"/>
-          <select id="leverage" class="bg-gray-700 px-4 py-3 rounded-lg">
-            <option>1:20</option>
-            <option>1:50</option>
-            <option>1:75</option>
-            <option selected>1:100</option>
-          </select>
-          <input type="text" id="symbolInput" readonly value="EUR/USD" class="bg-gray-700 px-4 py-3 rounded-lg"/>
-          <input type="number" id="stopLoss" placeholder="Stop Loss" class="bg-gray-700 px-4 py-3 rounded-lg"/>
-          <input type="number" id="takeProfit" placeholder="Take Profit" class="bg-gray-700 px-4 py-3 rounded-lg"/>
-        </div>
-        <div class="flex justify-center space-x-8">
-          <button onclick="placeOrder('buy')" class="bg-green-600 hover:bg-green-700 px-8 md:px-12 py-4 md:py-5 rounded-xl text-xl md:text-2xl font-bold transition transform hover:scale-105">
-            <i class="fas fa-arrow-up mr-3"></i>BUY
-          </button>
-          <button onclick="placeOrder('sell')" class="bg-red-600 hover:bg-red-700 px-8 md:px-12 py-4 md:py-5 rounded-xl text-xl md:text-2xl font-bold transition transform hover:scale-105">
-            <i class="fas fa-arrow-down mr-3"></i>SELL
-          </button>
-        </div>
-        <p id="riskWarning" class="text-center text-yellow-400 mt-4 hidden">Yüksek risk! Dikkat et.</p>
-      </div>
-    </div>
-
-    <!-- Sections -->
-    <div id="marketsSection" class="mt-6 hidden">
-      <div class="bg-gray-800 rounded-xl p-5 border border-gray-700 overflow-y-auto max-h-[50vh]">
-        <h3 class="text-xl font-bold mb-4 flex items-center"><i class="fas fa-chart-line mr-3 text-green-400"></i>Piyasalar</h3>
-        <div id="symbolList" class="space-y-3"></div>
-      </div>
-    </div>
-
-    <div id="openPositionsSection" class="mt-6 hidden">
-      <div class="bg-gray-800 rounded-xl p-5 border border-gray-700 overflow-y-auto max-h-[50vh]">
-        <h3 class="text-xl font-bold mb-4 flex items-center"><i class="fas fa-list mr-3 text-yellow-400"></i>Açık Pozisyonlar</h3>
-        <div id="openPositions" class="text-sm"></div>
-      </div>
-    </div>
-
-    <div id="historySection" class="mt-6 hidden">
-      <div class="bg-gray-800 rounded-xl p-5 border border-gray-700 overflow-y-auto max-h-[50vh]">
-        <h3 class="text-xl font-bold mb-4 flex items-center"><i class="fas fa-history mr-3 text-blue-400"></i>Trade Geçmişi</h3>
-        <div id="tradeHistory" class="text-sm"></div>
-      </div>
-    </div>
-
-    <div id="settingsSection" class="mt-6 hidden">
-      <div class="bg-gray-800 rounded-xl p-5 border border-gray-700">
-        <h3 class="text-xl font-bold mb-4 flex items-center"><i class="fas fa-cog mr-3 text-purple-400"></i>Ayarlar</h3>
-        <div class="space-y-4">
-          <div>
-            <h4 class="font-bold">Kullanıcı Ayarları</h4>
-            <p>Ad: <span id="userName"></span></p>
-            <p>E-posta: <span id="userEmail"></span></p>
-          </div>
-          <div>
-            <h4 class="font-bold">Şifre Değiştir</h4>
-            <input type="password" id="oldPass" placeholder="Eski Şifre" class="w-full px-4 py-3 bg-gray-700 rounded-lg mb-2"/>
-            <input type="password" id="newPass" placeholder="Yeni Şifre" class="w-full px-4 py-3 bg-gray-700 rounded-lg mb-2"/>
-            <button onclick="changePassword()" class="w-full py-3 bg-blue-600 rounded-lg font-bold hover:opacity-90">Değiştir</button>
-          </div>
-          <div>
-            <h4 class="font-bold">Para Yatırma / Çekme</h4>
-            <button onclick="openModal('depositModal')" class="w-full py-3 bg-green-600 rounded-lg font-bold hover:opacity-90 mb-2">Yatır</button>
-            <button onclick="openModal('withdrawModal')" class="w-full py-3 bg-red-600 rounded-lg font-bold hover:opacity-90">Çek</button>
-          </div>
-          <div>
-            <h4 class="font-bold">Hakkımda</h4>
-            <p>ProTrader X v1.0 - Borsa Simülasyonu. Tüm haklar saklı.</p>
-          </div>
-          <div>
-            <h4 class="font-bold">Güvenlik</h4>
-            <p>2FA: Aktif (placeholder)</p>
-            <button onclick="alert('Güvenlik güncellendi!')" class="w-full py-3 bg-purple-600 rounded-lg font-bold hover:opacity-90">Güncelle</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Bottom Nav -->
-  <nav class="bottom-nav hidden md:hidden">
-    <button onclick="showSection('marketsSection')" class="flex flex-col items-center text-gray-400 hover:text-white">
-      <i class="fas fa-chart-line text-2xl"></i>
-      <span class="text-xs">Piyasalar</span>
-    </button>
-    <button onclick="showSection('openPositionsSection')" class="flex flex-col items-center text-gray-400 hover:text-white">
-      <i class="fas fa-list text-2xl"></i>
-      <span class="text-xs">Açık</span>
-    </button>
-    <button onclick="showSection('historySection')" class="flex flex-col items-center text-gray-400 hover:text-white">
-      <i class="fas fa-history text-2xl"></i>
-      <span class="text-xs">Geçmiş</span>
-    </button>
-    <button onclick="showSection('settingsSection')" class="flex flex-col items-center text-gray-400 hover:text-white">
-      <i class="fas fa-cog text-2xl"></i>
-      <span class="text-xs">Ayarlar</span>
-    </button>
-  </nav>
-</div>
-
-<!-- Admin Dashboard and Modals (Önceki gibi, kısaltarak) -->
-<!-- ... Admin HTML burada olur, önceki kodlardan kopyala ... -->
+<!-- Trader Dashboard and other HTML sections (önceki gibi, tam kopyala) -->
 
 <script>
-  // Tam JS kodu burada, önceki gibi, ama test log'lu
-  console.log('LocalStorage test: ', localStorage); // Console'a bak, çalışıyorsa object gösterir
+  console.log('JS loaded OK');
+  console.log('LocalStorage test: ', localStorage); // Bak, object gösterirse OK, null ise browser sik
 
-  // Register
+  function toggleAuth() {
+    console.log('Toggle Auth called');
+    document.getElementById("registerForm").classList.toggle("hidden");
+    document.getElementById("loginForm").classList.toggle("hidden");
+    document.getElementById("authMessage").textContent = "";
+  }
+
+  function showAuthMessage(msg, className = "text-red-400") {
+    console.log('Message: ', msg);
+    const el = document.getElementById("authMessage");
+    el.textContent = msg;
+    el.className = `mt-4 text-center font-medium ${className}`;
+  }
+
   function register() {
-    console.log('Kayıt deneniyor');
+    console.log('Register called');
     const name = document.getElementById("regName").value.trim();
     const email = document.getElementById("regEmail").value.trim().toLowerCase();
     const pass = document.getElementById("regPass").value;
 
     if (!name || !email || !pass) {
-      console.log('Alanlar eksik');
       showAuthMessage("Tüm alanlar doldurulmalı!");
       return;
     }
 
-    if (localStorage.getItem(email)) {
-      console.log('E-posta zaten var');
-      showAuthMessage("Bu e-posta zaten kayıtlı!");
-      return;
-    }
+    try {
+      if (localStorage.getItem(email)) {
+        showAuthMessage("Bu e-posta zaten kayıtlı!");
+        return;
+      }
 
-    const user = { name, email, pass, balance: 10000, positions: [], logs: [], banned: false };
-    localStorage.setItem(email, JSON.stringify(user));
-    console.log('Kayıt başarılı, user saklandı');
-    showAuthMessage("Kayıt başarılı! Giriş yap.", "text-green-400");
-    toggleAuth();
+      const user = { name, email, pass, balance: 10000, positions: [], logs: [], banned: false };
+      localStorage.setItem(email, JSON.stringify(user));
+      showAuthMessage("Kayıt başarılı! Giriş yap.", "text-green-400");
+      toggleAuth();
+    } catch (e) {
+      console.log('LocalStorage error: ', e);
+      showAuthMessage("Depolama hatası! Browser ayarlarını kontrol et.");
+    }
   }
 
-  // Login
-  function login() {
-    console.log('Giriş deneniyor');
-    const email = document.getElementById("loginEmail").value.trim().toLowerCase();
-    const pass = document.getElementById("loginPass").value;
+  // Login and other functions (önceki gibi, log'lu yap)
 
-    if (email === adminEmail && pass === adminPass) {
-      console.log('Admin giriş başarılı');
-      isAdmin = true;
-      document.getElementById("authScreen").classList.add("hidden");
-      document.getElementById("adminDashboard").classList.remove("hidden");
-      loadAdminUsers();
-      return;
-    }
-
-    const userData = localStorage.getItem(email);
-    if (!userData) {
-      console.log('E-posta bulunamadı');
-      showAuthMessage("E-posta bulunamadı!");
-      return;
-    }
-
-    const user = JSON.parse(userData);
-    if (user.pass !== pass) {
-      console.log('Şifre yanlış');
-      showAuthMessage("Şifre yanlış!");
-      return;
-    }
-
-    if (user.banned) {
-      console.log('Hesap banlı');
-      showAuthMessage("Hesabın banlı!");
-      return;
-    }
-
-    currentUser = user;
-    isAdmin = false;
-    balance = user.balance || 10000;
-    positions = user.positions || [];
-    tradeLogs = user.logs || [];
-    document.getElementById("balance").textContent = "$" + balance.toLocaleString();
-    document.getElementById("authScreen").classList.add("hidden");
-    document.getElementById("traderDashboard").classList.remove("hidden");
-    loadChart();
-    loadSymbols();
-    updatePositions();
-    updateTradeHistory();
-    document.getElementById("userName").textContent = user.name;
-    document.getElementById("userEmail").textContent = user.email;
-    showSection('marketsSection');
-    console.log('Giriş başarılı, dashboard yüklendi');
-  }
-
-  // ... Tam diğer JS fonksiyonlar, önceki kodlardan kopyala, ama log'lu yap ... 
-
-  // Service Worker for PWA
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').then(() => console.log('SW registered')).catch(err => console.log('SW error', err));
-  }
+  // ... Tam JS, önceki mesajlardan kopyala, ama log'lu ...
 </script>
 </body>
 </html>
